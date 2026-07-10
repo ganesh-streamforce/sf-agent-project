@@ -1,0 +1,68 @@
+name: Test Connections
+
+on:
+  workflow_dispatch:
+    inputs:
+      ticket_key:
+        description: 'Jira ticket key to test-read'
+        required: true
+
+jobs:
+  test-salesforce:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Salesforce CLI
+        run: npm install -g @salesforce/cli
+
+      - name: Authenticate to Salesforce
+        run: |
+          sf org login client-credentials \
+            --client-id "${{ secrets.SF_CLIENT_ID }}" \
+            --client-secret "${{ secrets.SF_CLIENT_SECRET }}" \
+            --instance-url "${{ secrets.SF_INSTANCE_URL }}" \
+            --alias target-org
+
+      - name: Confirm connection
+        run: sf org display --target-org target-org
+
+      - name: Run a trivial query
+        run: |
+          sf data query \
+            --query "SELECT Id, Name FROM Organization LIMIT 1" \
+            --target-org target-org
+
+  test-jira:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        run: curl -LsSf https://astral.sh/uv/install.sh | sh
+
+      - name: Run Claude Code — read-only Jira test
+        uses: anthropics/claude-code-action@v1
+        env:
+          ANTHROPIC_BASE_URL: https://openrouter.ai/api
+          ANTHROPIC_AUTH_TOKEN: ${{ secrets.OPENROUTER_API_KEY }}
+          ANTHROPIC_API_KEY: ""
+          ANTHROPIC_MODEL: ${{ vars.OPENROUTER_MODEL }}
+          JIRA_BASE_URL: ${{ secrets.JIRA_BASE_URL }}
+          JIRA_USER_EMAIL: ${{ secrets.JIRA_USER_EMAIL }}
+          JIRA_API_TOKEN: ${{ secrets.JIRA_API_TOKEN }}
+        with:
+          anthropic_api_key: ${{ secrets.OPENROUTER_API_KEY }}
+          prompt: |
+            Using the Jira MCP tools, fetch ticket
+            ${{ github.event.inputs.ticket_key }} and print back:
+            - its title
+            - its full description
+            - its current status
+            Do not edit, create, or delete any files. Do not run any git
+            or bash commands. Do not post any comment to the ticket. This
+            is a read-only connectivity test — just report what you found.
+          claude_args: >-
+            --mcp-config .github/agent/mcp-config.json
+            --allowedTools "Read"
+            --max-turns 5

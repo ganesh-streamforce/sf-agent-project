@@ -62,6 +62,13 @@ jobs:
 
       - name: Install uv
         run: curl -LsSf https://astral.sh/uv/install.sh | sh
+      
+      - name: Debug - test mcp-atlassian directly
+        run: uvx mcp-atlassian --help
+        env:
+          JIRA_URL: ${{ secrets.JIRA_BASE_URL }}
+          JIRA_USERNAME: ${{ secrets.JIRA_USER_EMAIL }}
+          JIRA_API_TOKEN: ${{ secrets.JIRA_API_TOKEN }}
 
       - name: Run Claude Code — read-only Jira test
         uses: anthropics/claude-code-action@v1
@@ -86,5 +93,5 @@ jobs:
             is a read-only connectivity test — just report what you found.
           claude_args: >-
             --mcp-config .github/agent/mcp-config.json
-            --allowedTools "Read"
+            --allowedTools "Read,mcp__jira__*"
             --max-turns 5

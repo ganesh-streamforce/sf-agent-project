@@ -46,3 +46,7 @@ $RECYCLE.BIN/
 **/__pycache__/
 **/.venv/
 **/venv/
+
+#ignore .agents/skills/ as we are using claude code agent
+.agents/skills/
+

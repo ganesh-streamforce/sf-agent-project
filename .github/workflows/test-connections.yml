@@ -69,7 +69,13 @@ jobs:
           JIRA_URL: ${{ secrets.JIRA_BASE_URL }}
           JIRA_USERNAME: ${{ secrets.JIRA_USER_EMAIL }}
           JIRA_API_TOKEN: ${{ secrets.JIRA_API_TOKEN }}
-
+      
+      - name: Debug - test Jira credentials directly
+        run: |
+          curl -s -u "${{ secrets.JIRA_USER_EMAIL }}:${{ secrets.JIRA_API_TOKEN }}" \
+            "${{ secrets.JIRA_BASE_URL }}/rest/api/3/issue/TPDC-6?fields=summary,description,status" \
+            | jq .
+        
       - name: Run Claude Code — read-only Jira test
         uses: anthropics/claude-code-action@v1
         env:

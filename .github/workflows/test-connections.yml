@@ -16,13 +16,32 @@ jobs:
       - name: Install Salesforce CLI
         run: npm install -g @salesforce/cli
 
-      - name: Authenticate to Salesforce
+      - name: Get access token (Client Credentials flow)
         run: |
-          sf org login client-credentials \
-            --client-id "${{ secrets.SF_CLIENT_ID }}" \
-            --client-secret "${{ secrets.SF_CLIENT_SECRET }}" \
+          RESPONSE=$(curl -s -X POST "${{ secrets.SF_INSTANCE_URL }}/services/oauth2/token" \
+            -d "grant_type=client_credentials" \
+            -d "client_id=${{ secrets.SF_CLIENT_ID }}" \
+            -d "client_secret=${{ secrets.SF_CLIENT_SECRET }}")
+
+          ACCESS_TOKEN=$(echo "$RESPONSE" | jq -r .access_token)
+
+          if [ "$ACCESS_TOKEN" = "null" ] || [ -z "$ACCESS_TOKEN" ]; then
+            echo "Failed to get access token. Response was:"
+            echo "$RESPONSE"
+            exit 1
+          fi
+
+          echo "::add-mask::$ACCESS_TOKEN"
+          echo "SF_ACCESS_TOKEN=$ACCESS_TOKEN" >> "$GITHUB_ENV"
+
+      - name: Register org with sf CLI
+        run: |
+          sf org login access-token \
             --instance-url "${{ secrets.SF_INSTANCE_URL }}" \
-            --alias target-org
+            --alias target-org \
+            --no-prompt
+        env:
+          SF_ACCESS_TOKEN: ${{ env.SF_ACCESS_TOKEN }}
 
       - name: Confirm connection
         run: sf org display --target-org target-org

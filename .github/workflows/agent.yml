@@ -1,0 +1,107 @@
+name: Jira Agent
+
+on:
+  workflow_dispatch:
+    inputs:
+      ticket_key:
+        description: 'Jira ticket key'
+        required: true
+
+jobs:
+  agent-run:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Create branch
+        run: git checkout -b agent/${{ github.event.inputs.ticket_key }}
+
+      - name: Install Salesforce CLI
+        run: npm install -g @salesforce/cli
+
+      - name: Get access token (Client Credentials flow)
+        run: |
+          RESPONSE=$(curl -s -X POST "${{ secrets.SF_INSTANCE_URL }}/services/oauth2/token" \
+            -d "grant_type=client_credentials" \
+            -d "client_id=${{ secrets.SF_CLIENT_ID }}" \
+            -d "client_secret=${{ secrets.SF_CLIENT_SECRET }}")
+
+          ACCESS_TOKEN=$(echo "$RESPONSE" | jq -r .access_token)
+
+          if [ "$ACCESS_TOKEN" = "null" ] || [ -z "$ACCESS_TOKEN" ]; then
+            echo "Failed to get access token. Response was:"
+            echo "$RESPONSE"
+            exit 1
+          fi
+
+          echo "::add-mask::$ACCESS_TOKEN"
+          echo "SF_ACCESS_TOKEN=$ACCESS_TOKEN" >> "$GITHUB_ENV"
+
+      - name: Register org with sf CLI
+        run: |
+          sf org login access-token \
+            --instance-url "${{ secrets.SF_INSTANCE_URL }}" \
+            --alias target-org \
+            --no-prompt
+        env:
+          SF_ACCESS_TOKEN: ${{ env.SF_ACCESS_TOKEN }}
+
+      - name: Confirm Salesforce connection
+        run: sf org display --target-org target-org
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
+
+      - name: Run Claude Code agent
+        uses: anthropics/claude-code-action@v1
+        env:
+          ANTHROPIC_BASE_URL: https://openrouter.ai/api
+          ANTHROPIC_AUTH_TOKEN: ${{ secrets.OPENROUTER_API_KEY }}
+          ANTHROPIC_API_KEY: ""
+          ANTHROPIC_MODEL: ${{ vars.OPENROUTER_MODEL }}
+          JIRA_BASE_URL: ${{ secrets.JIRA_BASE_URL }}
+          JIRA_USER_EMAIL: ${{ secrets.JIRA_USER_EMAIL }}
+          JIRA_API_TOKEN: ${{ secrets.JIRA_API_TOKEN }}
+        with:
+          anthropic_api_key: ${{ secrets.OPENROUTER_API_KEY }}
+          show_full_output: true
+          prompt: |
+            First, read AGENTS.md to understand this project's structure,
+            conventions, and known gotchas before doing anything else.
+
+            Read Jira ticket ${{ github.event.inputs.ticket_key }} using the
+            Jira MCP tools. Decide whether it needs subtasks and create them
+            if so — keep subtasks small and specific, one per distinct
+            deliverable.
+
+            Implement the required Salesforce admin/developer changes in
+            this SFDX project on the current branch. Deploy to org alias
+            "target-org" and run local Apex tests before doing anything
+            else.
+
+            If everything passes:
+              - Update AGENTS.md with anything a future run would benefit
+                from knowing (new conventions, gotchas hit, objects or
+                fields touched). Keep entries brief — add at most 5 new
+                lines, under the "Recent changes" section, dated and
+                referencing this ticket. Do not restate anything already
+                documented there.
+              - Commit both the code changes and the AGENTS.md update
+                together, push the branch, and open a pull request
+                summarizing what changed and why.
+              - Post a progress comment on the Jira ticket summarizing what
+                was done, the test results, and a link to the PR.
+
+            If validation fails, or you are unsure whether a change is safe:
+              - Do not modify AGENTS.md.
+              - Do not commit, push, or open a PR.
+              - Post a comment on the Jira ticket explaining exactly what
+                failed or what you were unsure about.
+          claude_args: >-
+            --mcp-config .github/agent/mcp-config.json
+            --allowedTools "Bash,Edit,Read,Write,mcp__jira__*"
+            --max-turns 30

@@ -28,3 +28,4 @@ reference, not a changelog of everything that ever happened.
 
 - (dated entries added automatically after each successful ticket, e.g.
   "2026-07-10 (PROJ-101): Added AC_ExampleController, extended layout")
+- 2026-07-10 (DTM-1644): Added description to Account.Account_expected_amount__c custom field (Number(18,0)). First operation on this project — created force-app directory structure from scratch.

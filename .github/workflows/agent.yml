@@ -83,6 +83,11 @@ jobs:
             "target-org" and run local Apex tests before doing anything
             else.
 
+            You have a limited number of turns — be efficient. Read files
+            once and reuse what you learned. If a change is complex, scope
+            it to the ticket requirement only — do not explore or refactor
+            unrelated code.
+
             If everything passes:
               - Update AGENTS.md with anything a future run would benefit
                 from knowing (new conventions, gotchas hit, objects or
@@ -104,4 +109,4 @@ jobs:
           claude_args: >-
             --mcp-config .github/agent/mcp-config.json
             --allowedTools "Bash,Edit,Read,Write,mcp__jira__*"
-            --max-turns 30
+            --max-turns 50

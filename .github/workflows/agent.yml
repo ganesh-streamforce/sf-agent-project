@@ -70,37 +70,51 @@ jobs:
           anthropic_api_key: ${{ secrets.OPENROUTER_API_KEY }}
           show_full_output: true
           prompt: |
-            First, read AGENTS.md to understand this project's structure,
-            conventions, and known gotchas before doing anything else.
+            You have a limited number of turns — be efficient with every
+            one. Read files once and reuse what you learn. Do not refactor
+            or explore unrelated code.
 
-            Read Jira ticket ${{ github.event.inputs.ticket_key }} using the
-            Jira MCP tools. Decide whether it needs subtasks and create them
-            if so — keep subtasks small and specific, one per distinct
-            deliverable.
+            ### PHASE 1 — Load project knowledge
+            Read AGENTS.md to understand the project's structure,
+            conventions, and known gotchas.
 
-            Implement the required Salesforce admin/developer changes in
-            this SFDX project on the current branch. Deploy to org alias
-            "target-org" and run local Apex tests before doing anything
-            else.
+            ### PHASE 2 — Gather full context from Jira
+            Fetch ticket ${{ github.event.inputs.ticket_key }} using the
+            Jira MCP tools. Then gather broader context:
 
-            You have a limited number of turns — be efficient. Read files
-            once and reuse what you learned. If a change is complex, scope
-            it to the ticket requirement only — do not explore or refactor
-            unrelated code.
+              1. Check if this ticket has a parent (e.g. it's a subtask)
+                 or an Epic Link. If so, fetch the parent/epic ticket
+                 to understand the full requirement.
+              2. Search for any child/subtask issues under this ticket
+                 or its parent using JQL (e.g. "parent = KEY").
+              3. Read the description and comments of all related tickets
+                 to understand acceptance criteria, edge cases, and any
+                 decisions already made.
+              4. Summarize the full scope to yourself before proceeding.
 
+            Create Jira subtasks if this ticket genuinely needs them —
+            one subtask per distinct deliverable.
+
+            ### PHASE 3 — Implement
+            Make the required Salesforce admin/developer changes in this
+            SFDX project on the current branch. Deploy to org alias
+            "target-org" and run local Apex tests before committing
+            anything.
+
+            ### PHASE 4 — Success path
             If everything passes:
               - Update AGENTS.md with anything a future run would benefit
                 from knowing (new conventions, gotchas hit, objects or
-                fields touched). Keep entries brief — add at most 5 new
-                lines, under the "Recent changes" section, dated and
-                referencing this ticket. Do not restate anything already
-                documented there.
-              - Commit both the code changes and the AGENTS.md update
-                together, push the branch, and open a pull request
-                summarizing what changed and why.
-              - Post a progress comment on the Jira ticket summarizing what
-                was done, the test results, and a link to the PR.
+                fields touched). Keep it brief — at most 5 new lines under
+                "Recent changes", dated and referencing this ticket. Do
+                not restate anything already documented.
+              - Commit code changes and the AGENTS.md update together,
+                push the branch, and open a pull request summarizing what
+                changed and why.
+              - Post a progress comment on the Jira ticket summarizing
+                what was done, the test results, and a link to the PR.
 
+            ### PHASE 5 — Failure path
             If validation fails, or you are unsure whether a change is safe:
               - Do not modify AGENTS.md.
               - Do not commit, push, or open a PR.
@@ -109,4 +123,4 @@ jobs:
           claude_args: >-
             --mcp-config .github/agent/mcp-config.json
             --allowedTools "Bash,Edit,Read,Write,mcp__jira__*"
-            --max-turns 50
+            --max-turns 75

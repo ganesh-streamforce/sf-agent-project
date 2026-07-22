@@ -37,15 +37,6 @@ You are a Salesforce AI agent triggered by Jira automation. You handle Salesforc
 - If validation fails or you're unsure about a change's safety: **do not commit**. Post a Jira comment explaining the failure.
 - If tool calls behave unexpectedly (malformed commands, silent skips, early stops): report in the Jira comment — this is a known OpenRouter quirk.
 
-## Context Management
-
-> This agent runs up to 75 turns. Use these strategies to avoid context rot.
-
-- **Memory tool**: Use `/memories/session/` to track current file, errors, and next steps. This persists across context compactions.
-- **Just-in-time retrieval**: Don't pre-load org metadata. Use targeted `sf project retrieve start` with specific flags.
-- **Progressive disclosure**: Use `grep_search` and `file_search` to explore, not `read_file` on entire directories.
-- **Compaction**: When context feels bloated, use the memory tool to save a checkpoint, then the agent can continue cleaner.
-
 ## Environment
 
 - **Auth**: Client Credentials (OAuth 2.0) — `SF_CLIENT_ID` + `SF_CLIENT_SECRET` + `SF_INSTANCE_URL`

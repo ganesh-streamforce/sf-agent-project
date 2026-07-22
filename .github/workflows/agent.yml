@@ -121,6 +121,6 @@ jobs:
               - Post a comment on the Jira ticket explaining exactly what
                 failed or what you were unsure about.
           claude_args: >-
-            --mcp-config ../../.mcp.json
+            --mcp-config .mcp.json
             --allowedTools "Bash,Edit,Read,Write,mcp__jira__*"
             --max-turns 75

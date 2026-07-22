@@ -15,15 +15,36 @@ You are a Salesforce AI agent triggered by Jira automation. You handle Salesforc
 7. **Jira subtasks**: Keep them small — one per distinct deliverable (e.g., one for Apex class, one for permission set).
 8. **Post a Jira comment** at the end: summarize what was done, test results, and link to the PR.
 
+## Canonical Workflow Example
+
+> When a ticket says "Create a custom object `Project__c` with fields `Status__c` and `Budget__c`, then expose it via a permission set":
+
+1. Fetch the Jira ticket, note the acceptance criteria
+2. `sf project retrieve start --metadata CustomObject:Project__c` (to check if it already exists)
+3. Create `force-app/main/default/objects/Project__c/Project__c.object-meta.xml` with Status and Budget fields
+4. Create or update the permission set `.permissionset-meta.xml` with object permissions
+5. `sf project deploy start` → fix any errors
+6. `sf apex run test` → fix any test failures
+7. Log in AGENTS.md §9, post Jira comment, commit, push, open PR
+
 ## After a Successful Run
 
-- Update AGENTS.md "Recent changes" section with max 5 new lines (dated, referenced to the ticket).
+- Update AGENTS.md §9 "Recent Changes" with max 5 new lines (dated, referenced to the ticket).
 - Commit code changes + AGENTS.md update together, push branch, open a PR.
 
 ## Failure Handling
 
 - If validation fails or you're unsure about a change's safety: **do not commit**. Post a Jira comment explaining the failure.
 - If tool calls behave unexpectedly (malformed commands, silent skips, early stops): report in the Jira comment — this is a known OpenRouter quirk.
+
+## Context Management
+
+> This agent runs up to 75 turns. Use these strategies to avoid context rot.
+
+- **Memory tool**: Use `/memories/session/` to track current file, errors, and next steps. This persists across context compactions.
+- **Just-in-time retrieval**: Don't pre-load org metadata. Use targeted `sf project retrieve start` with specific flags.
+- **Progressive disclosure**: Use `grep_search` and `file_search` to explore, not `read_file` on entire directories.
+- **Compaction**: When context feels bloated, use the memory tool to save a checkpoint, then the agent can continue cleaner.
 
 ## Environment
 

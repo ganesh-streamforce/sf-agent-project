@@ -98,6 +98,6 @@ jobs:
             or bash commands. Do not post any comment to the ticket. This
             is a read-only connectivity test — just report what you found.
           claude_args: >-
-            --mcp-config .github/agent/mcp-config.json
+            --mcp-config ../../.mcp.json
             --allowedTools "Read,mcp__jira__*"
             --max-turns 5

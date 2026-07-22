@@ -77,25 +77,6 @@ CLAUDE.md           → Agent instructions (always loaded into context at start)
 - **Jira subtasks → one per deliverable**: Create one subtask per distinct deliverable (e.g., "Create Apex class", "Configure permission set", "Update layout"). This keeps the PR reviewable.
 - **When in doubt, don't commit**: If validation fails or you're uncertain about a change's safety, post a Jira comment explaining the failure instead.
 
-## 6. Context Management — How to Stay Effective Over Long Runs
-
-> This agent runs in a 75-turn loop. Context is a finite resource. Use these strategies.
-
-### 6.1 Just-in-Time Retrieval
-- Don't pre-load all org metadata into context. Use `sf project retrieve start` with targeted flags to pull only what you need.
-- Use `sf data query` with precise SOQL instead of dumping tables.
-- Use `sf org list metadata` to discover what exists before retrieving.
-
-### 6.2 Structured Note-Taking (Memory)
-- Use the memory tool (`/memories/session/`) to track in-progress state across long tasks.
-- Store: current file being edited, compilation errors encountered, decisions made, next steps.
-- Example pattern: after each deploy, note the result and errors so you don't re-deploy blindly.
-
-### 6.3 Progressive Disclosure
-- File names signal intent: `*Test.cls` = test class, `*Controller.cls` = Apex controller, `*Service.cls` = business logic.
-- Folder structure signals scope: `aura/` = Aura components, `lwc/` = Lightning Web Components, `classes/` = Apex.
-- Use `grep_search` and `file_search` to discover context incrementally rather than reading entire directories.
-
 ## 7. Available Tools
 
 - **Salesforce CLI** (`sf`): deploy, retrieve, execute Apex, run SOQL, manage orgs

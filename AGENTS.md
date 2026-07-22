@@ -95,3 +95,4 @@ CLAUDE.md           → Agent instructions (always loaded into context at start)
 > Add one line per successful ticket. Format: `YYYY-MM-DD (PROJ-###): Brief description of what was done`
 
 - *(2026-07-22): Updated context files per Anthropic context engineering best practices)*
+- (2026-07-22) DTM-1647: Testing ticket — verified Account record types (Client/Prospect/Competitor), AccountType picklist with dependent values, Customer_Type__c field, and page layouts. All 37 tests pass, deploy successful.

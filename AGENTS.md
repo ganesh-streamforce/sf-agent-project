@@ -95,3 +95,4 @@ CLAUDE.md           → Agent instructions (always loaded into context at start)
 > Add one line per successful ticket. Format: `YYYY-MM-DD (PROJ-###): Brief description of what was done`
 
 - *(2026-07-22): Updated context files per Anthropic context engineering best practices)*
+- 2026-07-22 (AOI-143): Verified Account ParentId (Parent Account) field is already on Prospect, Client (Customer), and Sales layouts with type=Hierarchy (unlimited depth). AccountHierarchy button present on all layouts. All 4 ACs already satisfied. Deployed & tested (37/37 Apex tests passed).

@@ -95,3 +95,4 @@ CLAUDE.md           → Agent instructions (always loaded into context at start)
 > Add one line per successful ticket. Format: `YYYY-MM-DD (PROJ-###): Brief description of what was done`
 
 - *(2026-07-22): Updated context files per Anthropic context engineering best practices)*
+- (2026-07-23) (AOI-143): Verified Account Hierarchy configuration — Parent Account field (ParentId) and AccountHierarchy button confirmed on all Account layouts (default, Prospect, Client, Competitor). All 37 Apex tests passed.

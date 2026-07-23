@@ -25,7 +25,7 @@ jobs:
       - name: Install Salesforce CLI
         run: npm install -g @salesforce/cli
 
-      - name: Get Salesforce Access Token
+      - name: Authenticate to Salesforce
         run: |
           RESPONSE=$(curl -s -X POST "${{ secrets.SF_INSTANCE_URL }}/services/oauth2/token" \
             -d "grant_type=client_credentials" \
@@ -35,15 +35,14 @@ jobs:
           ACCESS_TOKEN=$(echo "$RESPONSE" | jq -r .access_token)
 
           if [ "$ACCESS_TOKEN" = "null" ] || [ -z "$ACCESS_TOKEN" ]; then
-            echo "Failed to obtain Salesforce access token."
             echo "$RESPONSE"
             exit 1
           fi
 
           echo "::add-mask::$ACCESS_TOKEN"
-          echo "SF_ACCESS_TOKEN=$ACCESS_TOKEN" >> "$GITHUB_ENV"
+          echo "SF_ACCESS_TOKEN=$ACCESS_ENV"
 
-      - name: Login to Salesforce
+      - name: Register Salesforce Org
         run: |
           sf org login access-token \
             --instance-url "${{ secrets.SF_INSTANCE_URL }}" \
@@ -52,19 +51,15 @@ jobs:
         env:
           SF_ACCESS_TOKEN: ${{ env.SF_ACCESS_TOKEN }}
 
-      - name: Verify Salesforce Connection
+      - name: Verify Salesforce
         run: sf org display --target-org target-org
 
       - name: Install Teamwork Graph CLI
         run: |
-          echo "yes" | bash <(curl -fsSL https://teamwork-graph.atlassian.com/cli/install) \
-            --skip-login
+          echo yes | bash <(curl -fsSL https://teamwork-graph.atlassian.com/cli/install)
 
       - name: Verify TWG
         run: twg doctor
-        env:
-          TWG_TOKEN: ${{ secrets.JIRA_API_TOKEN }}
-          TWG_USER: ${{ secrets.JIRA_USER_EMAIL }}
 
       - name: Install uv
         uses: astral-sh/setup-uv@v3
@@ -86,15 +81,14 @@ jobs:
           show_full_output: true
 
           prompt: |
-            You are an experienced Salesforce Developer working in this repository.
+            You are an experienced Salesforce Developer working on this repository.
 
-            Your goal is to complete Jira ticket:
-
+            Your objective is to complete Jira ticket:
             ${{ github.event.inputs.ticket_key }}
 
-            --------------------------------------------------
-            PHASE 1 — Understand the Project
-            --------------------------------------------------
+            -------------------------
+            PHASE 1 — Understand Project
+            -------------------------
 
             Read AGENTS.md first.
 
@@ -102,19 +96,19 @@ jobs:
 
             • Project architecture
             • Folder structure
-            • Coding standards
+            • Coding conventions
             • Deployment process
             • Existing implementation
             • Previous agent learnings
 
-            Do not begin implementation until you fully understand the project.
+            Do not begin implementation until the project is understood.
 
-            --------------------------------------------------
-            PHASE 2 — Understand the Jira Requirement
-            --------------------------------------------------
+            -------------------------
+            PHASE 2 — Understand Jira
+            -------------------------
 
-            Use the available Teamwork Graph tools to gather the complete
-            context for Jira ticket:
+            Use the installed TWG skills to gather complete context for
+            ticket:
 
             ${{ github.event.inputs.ticket_key }}
 
@@ -124,42 +118,44 @@ jobs:
             • Acceptance Criteria
             • Description
             • Comments
-            • Parent / Epic
-            • Linked Issues
-            • Related Pull Requests
+            • Parent/Epic
+            • Related Issues
+            • Linked Pull Requests
             • Documentation
             • Dependencies
 
-            Before changing code, summarize the requirement internally and
-            identify the work that needs to be completed.
+            Before changing code, summarize the requirement internally.
 
-            --------------------------------------------------
+            -------------------------
             PHASE 3 — Plan
-            --------------------------------------------------
+            -------------------------
 
-            Before making any code changes:
+            Identify:
 
-            • Identify affected files.
-            • Identify impacted Salesforce metadata.
-            • Determine required Apex, LWC, Flow, Object or Permission changes.
-            • Plan deployment and testing.
+            • Files that must change
+            • Metadata affected
+            • Apex classes
+            • Lightning components
+            • Flows
+            • Objects
+            • Tests
 
             Only modify files required for this ticket.
 
             Do NOT:
 
-            • Refactor unrelated code.
-            • Rename files unnecessarily.
-            • Change formatting without reason.
-            • Make unrelated improvements.
+            • Refactor unrelated code
+            • Rename files
+            • Change formatting unnecessarily
+            • Introduce unrelated improvements
 
-            --------------------------------------------------
+            -------------------------
             PHASE 4 — Implement
-            --------------------------------------------------
+            -------------------------
 
             Implement the requested Salesforce changes.
 
-            Deploy the changes to Salesforce Org:
+            Deploy to Salesforce Org alias:
 
             target-org
 
@@ -167,70 +163,73 @@ jobs:
 
             Verify:
 
-            ✓ Deployment completed successfully
+            ✓ Deployment succeeded
 
-            ✓ Apex tests passed
+            ✓ Tests passed
 
             ✓ No deployment errors
 
-            --------------------------------------------------
+            -------------------------
             PHASE 5 — Success
-            --------------------------------------------------
+            -------------------------
 
             If everything succeeds:
 
-            1. Update AGENTS.md.
+            1. Update AGENTS.md
 
-            Add at most five concise lines under "Recent Changes"
-            including:
+            Add at most five concise lines under
+            "Recent Changes".
+
+            Include:
 
             • Date
             • Jira Ticket
-            • Components changed
+            • Objects changed
             • Important implementation notes
 
-            2. Commit the changes.
+            2. Commit changes.
 
-            3. Push the working branch.
+            3. Push branch.
 
-            4. Create a Pull Request including:
+            4. Create Pull Request.
+
+            Include:
 
             • Summary
             • Files changed
             • Deployment result
             • Test results
 
-            5. Post a progress update back to the Jira ticket using
-            the available Teamwork Graph tools.
+            5. Post a progress update back to the Jira ticket using the
+            installed TWG skills.
 
-            --------------------------------------------------
+            -------------------------
             PHASE 6 — Failure
-            --------------------------------------------------
+            -------------------------
 
-            If any of the following fails:
+            If any step fails:
 
+            • Deployment
+            • Tests
             • Salesforce authentication
             • Jira access
-            • Deployment
-            • Apex tests
             • Git push
             • Pull Request creation
 
             Stop immediately.
 
-            Do NOT:
+            Do not commit.
 
-            • Commit changes
-            • Push code
-            • Create a Pull Request
-            • Update AGENTS.md
+            Do not create a Pull Request.
+
+            Do not update AGENTS.md.
 
             Post a detailed explanation back to the Jira ticket including:
 
             • What failed
             • Possible cause
-            • Recommended next steps
+            • Recommended next action
 
-        claude_args: >-
-          --allowedTools "Bash,Read,Write,Edit"
-          --max-turns 75
+          claude_args: >-
+            --allowedTools "Bash,Read,Write,Edit"
+            --max-turns 75

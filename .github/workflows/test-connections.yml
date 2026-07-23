@@ -100,7 +100,7 @@ jobs:
 
           # --- 2. Relationship context (links, deps, code, docs, owners) ---
           echo "=== 2. Relationship Context ==="
-          twg context jira workitem "$TICKET" --detail --output json 2>&1
+          twg context jira workitem "$TICKET" --detail full --output json 2>&1
           echo ""
 
           echo "========================================"

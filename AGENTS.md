@@ -88,7 +88,6 @@ CLAUDE.md           → Agent instructions (always loaded into context at start)
 - Developer Edition: 75% Apex coverage required on deploy (same as production).
 - Auth: Client Credentials flow (not JWT). Token injected at runtime as `SF_ACCESS_TOKEN`.
 - Model: OpenRouter — not direct Anthropic API. Tool calls may behave unexpectedly (malformed commands, silent skips, early stops). If that happens, report it in the Jira comment.
-- No `force-app/` yet: first deploy will fail unless you retrieve metadata first.
 - TWG (not MCP): All Atlassian work-data operations use `twg` CLI, not MCP servers. `.mcp.json` has been removed. TWG skills are auto-copied into `.agents/skills/` during CI runs.
 
 ## 9. Recent Changes (Agent Log)
@@ -97,3 +96,4 @@ CLAUDE.md           → Agent instructions (always loaded into context at start)
 
 - *(2026-07-22): Updated context files per Anthropic context engineering best practices)*
 - *(2026-07-23): Replaced MCP/Jira with TWG CLI across all workflows. Removed .mcp.json. Added TWG skill copying to agent.yml. Reworked test-connections.yml to use TWG for Jira ticket context logging.)
+- *(2026-07-23) (AOI-145): Added Region__c (picklist: NA/EMEA/APAC), Territory__c (text), and Account_Segment__c (formula from NumberOfEmployees) fields on Account. Assigned to Prospect & Client record types. Created Sales_Operations_Super_User permission set with FLS on new fields. Note: 'Client' record type == 'Customer' in this org.)

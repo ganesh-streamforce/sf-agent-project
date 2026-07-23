@@ -62,7 +62,14 @@ jobs:
       - name: Install TWG CLI
         run: |
           echo "yes" | bash <(curl -fsSL https://teamwork-graph.atlassian.com/cli/install) \
-            --skip-login --skip-skills
+            --skip-login
+
+      - name: Copy TWG skills into project
+        run: |
+          mkdir -p .agents/skills
+          cp -r ~/.agents/skills/twg* .agents/skills/
+          echo "TWG skills installed:"
+          ls -d .agents/skills/twg*
 
       - name: Verify TWG CLI
         run: twg --version

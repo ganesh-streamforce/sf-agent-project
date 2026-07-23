@@ -49,7 +49,7 @@ config/
   archive/          → Historical run notes (one per completed ticket)
 AGENTS.md           ← This file (project knowledge base)
 CLAUDE.md           → Agent instructions (always loaded into context at start)
-.mcp.json           → MCP server configuration (Jira, etc.)
+# Removed — replaced by TWG CLI (see §7)
 ```
 
 ## 4. Canonical Workflow — What "Done" Looks Like
@@ -80,8 +80,8 @@ CLAUDE.md           → Agent instructions (always loaded into context at start)
 ## 7. Available Tools
 
 - **Salesforce CLI** (`sf`): deploy, retrieve, execute Apex, run SOQL, manage orgs
-- **Jira MCP** (`mcp__jira__*`): fetch tickets, search with JQL, create subtasks, post comments
-- **Skills** (`.agents/skills/` + `.claude/skills/`): Apex, LWC, Flows, Data Cloud, OmniStudio, Code Analyzer, SOQL, metadata deployment — use when relevant to the ticket
+- **TWG CLI** (`twg`): fetch tickets, search with JQL, create subtasks, post comments, context discovery, PR status, status rollups — Atlassian work-data (replaces old MCP)
+- **Skills** (`.agents/skills/` + `.claude/skills/`): Apex, LWC, Flows, Data Cloud, OmniStudio, Code Analyzer, SOQL, metadata deployment, `twg-*` — use when relevant to the ticket
 
 ## 8. Known Pitfalls
 
@@ -89,9 +89,11 @@ CLAUDE.md           → Agent instructions (always loaded into context at start)
 - Auth: Client Credentials flow (not JWT). Token injected at runtime as `SF_ACCESS_TOKEN`.
 - Model: OpenRouter — not direct Anthropic API. Tool calls may behave unexpectedly (malformed commands, silent skips, early stops). If that happens, report it in the Jira comment.
 - No `force-app/` yet: first deploy will fail unless you retrieve metadata first.
+- TWG (not MCP): All Atlassian work-data operations use `twg` CLI, not MCP servers. `.mcp.json` has been removed. TWG skills are auto-copied into `.agents/skills/` during CI runs.
 
 ## 9. Recent Changes (Agent Log)
 
 > Add one line per successful ticket. Format: `YYYY-MM-DD (PROJ-###): Brief description of what was done`
 
 - *(2026-07-22): Updated context files per Anthropic context engineering best practices)*
+- *(2026-07-23): Replaced MCP/Jira with TWG CLI across all workflows. Removed .mcp.json. Added TWG skill copying to agent.yml. Reworked test-connections.yml to use TWG for Jira ticket context logging.)

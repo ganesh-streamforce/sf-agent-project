@@ -60,44 +60,50 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install uv
-        run: curl -LsSf https://astral.sh/uv/install.sh | sh
-      
-      - name: Debug - test mcp-atlassian directly
-        run: uvx mcp-atlassian --help
-        env:
-          JIRA_URL: ${{ secrets.JIRA_BASE_URL }}
-          JIRA_USERNAME: ${{ secrets.JIRA_USER_EMAIL }}
-          JIRA_API_TOKEN: ${{ secrets.JIRA_API_TOKEN }}
-      
-      - name: Debug - test Jira credentials directly
+      - name: Derive Jira site from JIRA_BASE_URL
         run: |
-          curl -s -u "${{ secrets.JIRA_USER_EMAIL }}:${{ secrets.JIRA_API_TOKEN }}" \
-            "${{ secrets.JIRA_BASE_URL }}/rest/api/3/issue/TPDC-6?fields=summary,description,status" \
-            | jq .
-        
-      - name: Run Claude Code — read-only Jira test
-        uses: anthropics/claude-code-action@v1
+          SITE=$(echo "${{ secrets.JIRA_BASE_URL }}" | sed -E 's|https?://([^.]+)\..*|\1|')
+          echo "TWG_SITE=$SITE" >> "$GITHUB_ENV"
+          echo "Using Jira site: $SITE"
+
+      - name: Install TWG CLI
+        run: |
+          echo "yes" | bash <(curl -fsSL https://teamwork-graph.atlassian.com/cli/install) \
+            --skip-login
+
+      - name: Copy TWG skills into project
+        run: |
+          mkdir -p .agents/skills
+          cp -r ~/.agents/skills/twg* .agents/skills/
+          echo "TWG skills installed:"
+          ls -d .agents/skills/twg*
+
+      - name: Verify TWG CLI
+        run: twg --version
+
+      - name: Fetch full Jira ticket context via TWG
         env:
-          ANTHROPIC_BASE_URL: https://openrouter.ai/api
-          ANTHROPIC_AUTH_TOKEN: ${{ secrets.OPENROUTER_API_KEY }}
-          ANTHROPIC_API_KEY: ""
-          ANTHROPIC_MODEL: ${{ vars.OPENROUTER_MODEL }}
-          JIRA_BASE_URL: ${{ secrets.JIRA_BASE_URL }}
-          JIRA_USER_EMAIL: ${{ secrets.JIRA_USER_EMAIL }}
-          JIRA_API_TOKEN: ${{ secrets.JIRA_API_TOKEN }}
-        with:
-          anthropic_api_key: ${{ secrets.OPENROUTER_API_KEY }}
-          prompt: |
-            Using the Jira MCP tools, fetch ticket
-            ${{ github.event.inputs.ticket_key }} and print back:
-            - its title
-            - its full description
-            - its current status
-            Do not edit, create, or delete any files. Do not run any git
-            or bash commands. Do not post any comment to the ticket. This
-            is a read-only connectivity test — just report what you found.
-          claude_args: >-
-            --mcp-config .mcp.json
-            --allowedTools "Read,mcp__jira__*"
-            --max-turns 5
+          TWG_TOKEN: ${{ secrets.JIRA_API_TOKEN }}
+          TWG_USER: ${{ secrets.JIRA_USER_EMAIL }}
+        run: |
+          TICKET="${{ github.event.inputs.ticket_key }}"
+          echo "========================================"
+          echo "  TWG — Jira Ticket Context Test"
+          echo "  Ticket: $TICKET"
+          echo "========================================"
+          echo ""
+
+          # --- 1. Workitem details (full) ---
+          echo "=== 1. Workitem Details (full) ==="
+          twg jira workitem get "$TICKET" --full --comments --output json 2>&1
+          echo ""
+
+          # --- 2. Relationship context (links, deps, code, docs, owners) ---
+          echo "=== 2. Relationship Context ==="
+          twg context jira workitem "$TICKET" --detail --output json 2>&1
+          echo ""
+
+          echo "========================================"
+          echo "  Context fetch complete — all TWG calls"
+          echo "  returned successfully."
+          echo "========================================"

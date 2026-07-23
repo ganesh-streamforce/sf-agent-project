@@ -10,22 +10,20 @@ on:
 jobs:
   agent-run:
     runs-on: ubuntu-latest
-
     permissions:
       contents: write
       pull-requests: write
       id-token: write
-
     steps:
       - uses: actions/checkout@v4
 
-      - name: Create working branch
+      - name: Create branch
         run: git checkout -b agent/${{ github.event.inputs.ticket_key }}
 
       - name: Install Salesforce CLI
         run: npm install -g @salesforce/cli
 
-      - name: Authenticate to Salesforce
+      - name: Get access token (Client Credentials flow)
         run: |
           RESPONSE=$(curl -s -X POST "${{ secrets.SF_INSTANCE_URL }}/services/oauth2/token" \
             -d "grant_type=client_credentials" \
@@ -35,14 +33,15 @@ jobs:
           ACCESS_TOKEN=$(echo "$RESPONSE" | jq -r .access_token)
 
           if [ "$ACCESS_TOKEN" = "null" ] || [ -z "$ACCESS_TOKEN" ]; then
+            echo "Failed to get access token. Response was:"
             echo "$RESPONSE"
             exit 1
           fi
 
           echo "::add-mask::$ACCESS_TOKEN"
-          echo "SF_ACCESS_TOKEN=$ACCESS_ENV"
+          echo "SF_ACCESS_TOKEN=$ACCESS_TOKEN" >> "$GITHUB_ENV"
 
-      - name: Register Salesforce Org
+      - name: Register org with sf CLI
         run: |
           sf org login access-token \
             --instance-url "${{ secrets.SF_INSTANCE_URL }}" \
@@ -51,185 +50,114 @@ jobs:
         env:
           SF_ACCESS_TOKEN: ${{ env.SF_ACCESS_TOKEN }}
 
-      - name: Verify Salesforce
+      - name: Confirm Salesforce connection
         run: sf org display --target-org target-org
 
-      - name: Install Teamwork Graph CLI
+      - name: Derive Jira site from JIRA_BASE_URL
         run: |
-          echo yes | bash <(curl -fsSL https://teamwork-graph.atlassian.com/cli/install)
+          SITE=$(echo "${{ secrets.JIRA_BASE_URL }}" | sed -E 's|https?://([^.]+)\..*|\1|')
+          echo "TWG_SITE=$SITE" >> "$GITHUB_ENV"
+          echo "Using Jira site: $SITE"
 
-      - name: Verify TWG
-        run: twg doctor
+      - name: Install TWG CLI
+        run: |
+          echo "yes" | bash <(curl -fsSL https://teamwork-graph.atlassian.com/cli/install) \
+            --skip-login
+
+      - name: Copy TWG skills into project
+        run: |
+          mkdir -p .agents/skills
+          cp -r ~/.agents/skills/twg* .agents/skills/
+          echo "TWG skills installed:"
+          ls -d .agents/skills/twg*
+
+      - name: Verify TWG CLI
+        run: twg --version
 
       - name: Install uv
         uses: astral-sh/setup-uv@v3
 
-      - name: Run AI Agent
+      - name: Run Claude Code agent
         uses: anthropics/claude-code-action@v1
-
         env:
           ANTHROPIC_BASE_URL: https://openrouter.ai/api
           ANTHROPIC_AUTH_TOKEN: ${{ secrets.OPENROUTER_API_KEY }}
           ANTHROPIC_API_KEY: ""
           ANTHROPIC_MODEL: ${{ vars.OPENROUTER_MODEL }}
-
           TWG_TOKEN: ${{ secrets.JIRA_API_TOKEN }}
           TWG_USER: ${{ secrets.JIRA_USER_EMAIL }}
-
         with:
           anthropic_api_key: ${{ secrets.OPENROUTER_API_KEY }}
           show_full_output: true
-
           prompt: |
-            You are an experienced Salesforce Developer working on this repository.
+            You have a limited number of turns — be efficient with every
+            one. Read files once and reuse what you learn. Do not refactor
+            or explore unrelated code.
 
-            Your objective is to complete Jira ticket:
-            ${{ github.event.inputs.ticket_key }}
+            ### PHASE 1 — Load project knowledge
+            Read AGENTS.md to understand the project's structure,
+            conventions, and known gotchas.
 
-            -------------------------
-            PHASE 1 — Understand Project
-            -------------------------
+            ### PHASE 2 — Gather Jira Context
+            Run the twg-context-discovery skill for
+            ${{ github.event.inputs.ticket_key }}.
+            Use the returned context to fully understand the requirement
+            before making any code changes.
 
-            Read AGENTS.md first.
+            ### PHASE 2b — Create and execute subtasks
+            If this ticket needs multiple deliverables, create subtasks —
+            one per distinct deliverable. Assign each to yourself and
+            work through them one by one:
 
-            Understand:
+              1. Create subtask assigned to you:
+                 twg jira workitem create \
+                   --space <PROJECT_KEY> \
+                   --type "Sub-task" \
+                   --summary "<deliverable title>" \
+                   --parent ${{ github.event.inputs.ticket_key }} \
+                   --assignee "me"
 
-            • Project architecture
-            • Folder structure
-            • Coding conventions
-            • Deployment process
-            • Existing implementation
-            • Previous agent learnings
+              2. Implement that subtask completely.
 
-            Do not begin implementation until the project is understood.
+              3. Mark it done by posting a completion comment:
+                 twg jira workitem comment create \
+                   --issue-id <SUBTASK_KEY> \
+                   --body-format markdown \
+                   --body 'Completed: <what was done>'
 
-            -------------------------
-            PHASE 2 — Understand Jira
-            -------------------------
+              4. Move to the next subtask and repeat steps 2-3.
 
-            Use the installed TWG skills to gather complete context for
-            ticket:
+            Only after ALL subtasks are complete, move to Phase 3.
 
-            ${{ github.event.inputs.ticket_key }}
+            ### PHASE 3 — Implement
+            Make the required Salesforce admin/developer changes in this
+            SFDX project on the current branch. Deploy to org alias
+            "target-org" and run local Apex tests before committing
+            anything.
 
-            Understand:
+            ### PHASE 4 — Success path
+            If everything passes:
+              - Update AGENTS.md with anything a future run would benefit
+                from knowing (new conventions, gotchas hit, objects or
+                fields touched). Keep it brief — at most 5 new lines under
+                "Recent changes", dated and referencing this ticket. Do
+                not restate anything already documented.
+              - Commit code changes and the AGENTS.md update together,
+                push the branch, and open a pull request summarizing what
+                changed and why.
+              - Post a progress comment on the Jira ticket using:
+                twg jira workitem comment create \
+                  --issue-id ${{ github.event.inputs.ticket_key }} \
+                  --body-format markdown \
+                  --body '<your comment here>'
 
-            • Requirement
-            • Acceptance Criteria
-            • Description
-            • Comments
-            • Parent/Epic
-            • Related Issues
-            • Linked Pull Requests
-            • Documentation
-            • Dependencies
-
-            Before changing code, summarize the requirement internally.
-
-            -------------------------
-            PHASE 3 — Plan
-            -------------------------
-
-            Identify:
-
-            • Files that must change
-            • Metadata affected
-            • Apex classes
-            • Lightning components
-            • Flows
-            • Objects
-            • Tests
-
-            Only modify files required for this ticket.
-
-            Do NOT:
-
-            • Refactor unrelated code
-            • Rename files
-            • Change formatting unnecessarily
-            • Introduce unrelated improvements
-
-            -------------------------
-            PHASE 4 — Implement
-            -------------------------
-
-            Implement the requested Salesforce changes.
-
-            Deploy to Salesforce Org alias:
-
-            target-org
-
-            Run validation and Apex tests.
-
-            Verify:
-
-            ✓ Deployment succeeded
-
-            ✓ Tests passed
-
-            ✓ No deployment errors
-
-            -------------------------
-            PHASE 5 — Success
-            -------------------------
-
-            If everything succeeds:
-
-            1. Update AGENTS.md
-
-            Add at most five concise lines under
-            "Recent Changes".
-
-            Include:
-
-            • Date
-            • Jira Ticket
-            • Objects changed
-            • Important implementation notes
-
-            2. Commit changes.
-
-            3. Push branch.
-
-            4. Create Pull Request.
-
-            Include:
-
-            • Summary
-            • Files changed
-            • Deployment result
-            • Test results
-
-            5. Post a progress update back to the Jira ticket using the
-            installed TWG skills.
-
-            -------------------------
-            PHASE 6 — Failure
-            -------------------------
-
-            If any step fails:
-
-            • Deployment
-            • Tests
-            • Salesforce authentication
-            • Jira access
-            • Git push
-            • Pull Request creation
-
-            Stop immediately.
-
-            Do not commit.
-
-            Do not create a Pull Request.
-
-            Do not update AGENTS.md.
-
-            Post a detailed explanation back to the Jira ticket including:
-
-            • What failed
-            • Possible cause
-            • Recommended next action
-
+            ### PHASE 5 — Failure path
+            If validation fails, or you are unsure whether a change is safe:
+              - Do not modify AGENTS.md.
+              - Do not commit, push, or open a PR.
+              - Post a comment on the Jira ticket explaining exactly what
+                failed or what you were unsure about (use the same twg
+                comment create command as above).
           claude_args: >-
-            --allowedTools "Bash,Read,Write,Edit"
+            --allowedTools "Bash,Edit,Read,Write"
             --max-turns 75

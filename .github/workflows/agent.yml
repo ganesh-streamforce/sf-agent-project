@@ -99,11 +99,28 @@ jobs:
             conventions, and known gotchas.
 
             ### PHASE 2 — Gather Jira Context
-            Run the twg-context-discovery skill for
-            ${{ github.event.inputs.ticket_key }}.
-            Use the returned context to fully understand the requirement
-            before making any code changes.
+            Use the installed Teamwork Graph (TWG) capabilities to gather the complete
+            context for Jira ticket:${{ github.event.inputs.ticket_key }}
 
+            Gather and understand:
+
+            • Requirement
+            • Acceptance Criteria
+            • Description
+            • Comments
+            • Parent or Epic
+            • Related Issues
+            • Linked Pull Requests
+            • Documentation
+            • Dependencies
+            • Recent activity
+
+            Before making any code changes, summarize the complete requirement
+            internally and identify exactly what needs to be implemented.
+
+            If additional context is required, continue exploring the related
+            Jira items until the requirement is fully understood.
+            
             ### PHASE 2b — Create and execute subtasks
             If this ticket needs multiple deliverables, create subtasks —
             one per distinct deliverable. Assign each to yourself and

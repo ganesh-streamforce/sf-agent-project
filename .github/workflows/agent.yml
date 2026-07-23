@@ -53,6 +53,27 @@ jobs:
       - name: Confirm Salesforce connection
         run: sf org display --target-org target-org
 
+      - name: Derive Jira site from JIRA_BASE_URL
+        run: |
+          SITE=$(echo "${{ secrets.JIRA_BASE_URL }}" | sed -E 's|https?://([^.]+)\..*|\1|')
+          echo "TWG_SITE=$SITE" >> "$GITHUB_ENV"
+          echo "Using Jira site: $SITE"
+
+      - name: Install TWG CLI
+        run: |
+          echo "yes" | bash <(curl -fsSL https://teamwork-graph.atlassian.com/cli/install) \
+            --skip-login
+
+      - name: Copy TWG skills into project
+        run: |
+          mkdir -p .agents/skills
+          cp -r ~/.agents/skills/twg* .agents/skills/
+          echo "TWG skills installed:"
+          ls -d .agents/skills/twg*
+
+      - name: Verify TWG CLI
+        run: twg --version
+
       - name: Install uv
         uses: astral-sh/setup-uv@v3
 
@@ -63,9 +84,8 @@ jobs:
           ANTHROPIC_AUTH_TOKEN: ${{ secrets.OPENROUTER_API_KEY }}
           ANTHROPIC_API_KEY: ""
           ANTHROPIC_MODEL: ${{ vars.OPENROUTER_MODEL }}
-          JIRA_BASE_URL: ${{ secrets.JIRA_BASE_URL }}
-          JIRA_USER_EMAIL: ${{ secrets.JIRA_USER_EMAIL }}
-          JIRA_API_TOKEN: ${{ secrets.JIRA_API_TOKEN }}
+          TWG_TOKEN: ${{ secrets.JIRA_API_TOKEN }}
+          TWG_USER: ${{ secrets.JIRA_USER_EMAIL }}
         with:
           anthropic_api_key: ${{ secrets.OPENROUTER_API_KEY }}
           show_full_output: true
@@ -78,22 +98,53 @@ jobs:
             Read AGENTS.md to understand the project's structure,
             conventions, and known gotchas.
 
-            ### PHASE 2 — Gather full context from Jira
-            Fetch ticket ${{ github.event.inputs.ticket_key }} using the
-            Jira MCP tools. Then gather broader context:
+            ### PHASE 2 — Gather Jira Context
+            Use the installed Teamwork Graph (TWG) capabilities to gather the complete
+            context for Jira ticket:${{ github.event.inputs.ticket_key }}
 
-              1. Check if this ticket has a parent (e.g. it's a subtask)
-                 or an Epic Link. If so, fetch the parent/epic ticket
-                 to understand the full requirement.
-              2. Search for any child/subtask issues under this ticket
-                 or its parent using JQL (e.g. "parent = KEY").
-              3. Read the description and comments of all related tickets
-                 to understand acceptance criteria, edge cases, and any
-                 decisions already made.
-              4. Summarize the full scope to yourself before proceeding.
+            Gather and understand:
 
-            Create Jira subtasks if this ticket genuinely needs them —
-            one subtask per distinct deliverable.
+            • Requirement
+            • Acceptance Criteria
+            • Description
+            • Comments
+            • Parent or Epic
+            • Related Issues
+            • Linked Pull Requests
+            • Documentation
+            • Dependencies
+            • Recent activity
+
+            Before making any code changes, summarize the complete requirement
+            internally and identify exactly what needs to be implemented.
+
+            If additional context is required, continue exploring the related
+            Jira items until the requirement is fully understood.
+            
+            ### PHASE 2b — Create and execute subtasks
+            If this ticket needs multiple deliverables, create subtasks —
+            one per distinct deliverable. Assign each to yourself and
+            work through them one by one:
+
+              1. Create subtask assigned to you:
+                 twg jira workitem create \
+                   --space <PROJECT_KEY> \
+                   --type "Sub-task" \
+                   --summary "<deliverable title>" \
+                   --parent ${{ github.event.inputs.ticket_key }} \
+                   --assignee "me"
+
+              2. Implement that subtask completely.
+
+              3. Mark it done by posting a completion comment:
+                 twg jira workitem comment create \
+                   --issue-id <SUBTASK_KEY> \
+                   --body-format markdown \
+                   --body 'Completed: <what was done>'
+
+              4. Move to the next subtask and repeat steps 2-3.
+
+            Only after ALL subtasks are complete, move to Phase 3.
 
             ### PHASE 3 — Implement
             Make the required Salesforce admin/developer changes in this
@@ -111,16 +162,19 @@ jobs:
               - Commit code changes and the AGENTS.md update together,
                 push the branch, and open a pull request summarizing what
                 changed and why.
-              - Post a progress comment on the Jira ticket summarizing
-                what was done, the test results, and a link to the PR.
+              - Post a progress comment on the Jira ticket using:
+                twg jira workitem comment create \
+                  --issue-id ${{ github.event.inputs.ticket_key }} \
+                  --body-format markdown \
+                  --body '<your comment here>'
 
             ### PHASE 5 — Failure path
             If validation fails, or you are unsure whether a change is safe:
               - Do not modify AGENTS.md.
               - Do not commit, push, or open a PR.
               - Post a comment on the Jira ticket explaining exactly what
-                failed or what you were unsure about.
+                failed or what you were unsure about (use the same twg
+                comment create command as above).
           claude_args: >-
-            --mcp-config .mcp.json
-            --allowedTools "Bash,Edit,Read,Write,mcp__jira__*"
+            --allowedTools "Bash,Edit,Read,Write"
             --max-turns 75

@@ -88,10 +88,10 @@ CLAUDE.md           → Agent instructions (always loaded into context at start)
 - Developer Edition: 75% Apex coverage required on deploy (same as production).
 - Auth: Client Credentials flow (not JWT). Token injected at runtime as `SF_ACCESS_TOKEN`.
 - Model: OpenRouter — not direct Anthropic API. Tool calls may behave unexpectedly (malformed commands, silent skips, early stops). If that happens, report it in the Jira comment.
-- No `force-app/` yet: first deploy will fail unless you retrieve metadata first.
 
 ## 9. Recent Changes (Agent Log)
 
 > Add one line per successful ticket. Format: `YYYY-MM-DD (PROJ-###): Brief description of what was done`
 
 - *(2026-07-22): Updated context files per Anthropic context engineering best practices)*
+- *(2026-07-27) (AOI-145): Implemented Account Territory/Region fields — Region__c (picklist NA/EMEA/APAC), Territory__c (Text 255), Account_Segment__c (formula: Enterprise/Midmarket based on employee count), Record Type picklist values on Prospect/Client, and Sales_Operations_Super_User permission set with FLS.*

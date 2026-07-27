@@ -100,20 +100,8 @@ jobs:
 
             ### PHASE 2 — Gather Jira Context
             Use the installed Teamwork Graph (TWG) capabilities to gather the complete
-            context for Jira ticket:${{ github.event.inputs.ticket_key }}
-
-            Gather and understand:
-
-            • Requirement
-            • Acceptance Criteria
-            • Description
-            • Comments
-            • Parent or Epic
-            • Related Issues
-            • Linked Pull Requests
-            • Documentation
-            • Dependencies
-            • Recent activity
+            context for Jira ticket
+            Prompt : Tell me everything about ${{ github.event.inputs.ticket_key }}
 
             Before making any code changes, summarize the complete requirement
             internally and identify exactly what needs to be implemented.

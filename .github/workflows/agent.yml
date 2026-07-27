@@ -66,10 +66,11 @@ jobs:
 
       - name: Copy TWG skills into project
         run: |
-          mkdir -p .agents/skills
-          cp -r ~/.agents/skills/twg* .agents/skills/
+          mkdir -p .claude/skills
+          cp -r ~/.agents/skills/twg* .claude/skills/
+
           echo "TWG skills installed:"
-          ls -d .agents/skills/twg*
+          find .claude/skills -maxdepth 2
 
       - name: Verify TWG CLI
         run: twg --version

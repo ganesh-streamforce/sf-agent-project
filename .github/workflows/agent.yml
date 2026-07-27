@@ -1,4 +1,4 @@
-name: Jira Agent
+name: Salesforce Agent
 
 on:
   workflow_dispatch:
@@ -98,17 +98,17 @@ jobs:
             Read AGENTS.md to understand the project's structure,
             conventions, and known gotchas.
 
-            ### PHASE 2 — Gather Jira Context
-            Use the installed Teamwork Graph (TWG) capabilities to gather the complete
+            ### PHASE 2 — Gather Jira Context via TWG CLI
+            Use the installed Teamwork Graph (TWG) CLI to gather the complete
             context for Jira ticket
-            Prompt : Tell me everything about ${{ github.event.inputs.ticket_key }}
+            Prompt: Tell me everything about ${{ github.event.inputs.ticket_key }}
 
             Before making any code changes, summarize the complete requirement
             internally and identify exactly what needs to be implemented.
 
             If additional context is required, continue exploring the related
             Jira items until the requirement is fully understood.
-            
+
             ### PHASE 2b — Create and execute subtasks
             If this ticket needs multiple deliverables, create subtasks —
             one per distinct deliverable. Assign each to yourself and

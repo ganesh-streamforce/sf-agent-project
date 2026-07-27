@@ -2,10 +2,6 @@ name: Test Connections
 
 on:
   workflow_dispatch:
-    inputs:
-      ticket_key:
-        description: 'Jira ticket key to test-read'
-        required: true
 
 jobs:
   test-salesforce:
@@ -51,59 +47,3 @@ jobs:
           sf data query \
             --query "SELECT Id, Name FROM Organization LIMIT 1" \
             --target-org target-org
-
-  test-jira:
-    runs-on: ubuntu-latest
-    permissions:
-      id-token: write
-      contents: read
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Derive Jira site from JIRA_BASE_URL
-        run: |
-          SITE=$(echo "${{ secrets.JIRA_BASE_URL }}" | sed -E 's|https?://([^.]+)\..*|\1|')
-          echo "TWG_SITE=$SITE" >> "$GITHUB_ENV"
-          echo "Using Jira site: $SITE"
-
-      - name: Install TWG CLI
-        run: |
-          echo "yes" | bash <(curl -fsSL https://teamwork-graph.atlassian.com/cli/install) \
-            --skip-login
-
-      - name: Copy TWG skills into project
-        run: |
-          mkdir -p .agents/skills
-          cp -r ~/.agents/skills/twg* .agents/skills/
-          echo "TWG skills installed:"
-          ls -d .agents/skills/twg*
-
-      - name: Verify TWG CLI
-        run: twg --version
-
-      - name: Fetch full Jira ticket context via TWG
-        env:
-          TWG_TOKEN: ${{ secrets.JIRA_API_TOKEN }}
-          TWG_USER: ${{ secrets.JIRA_USER_EMAIL }}
-        run: |
-          TICKET="${{ github.event.inputs.ticket_key }}"
-          echo "========================================"
-          echo "  TWG — Jira Ticket Context Test"
-          echo "  Ticket: $TICKET"
-          echo "========================================"
-          echo ""
-
-          # --- 1. Workitem details (full) ---
-          echo "=== 1. Workitem Details (full) ==="
-          twg jira workitem get "$TICKET" --full --comments --output json 2>&1
-          echo ""
-
-          # --- 2. Relationship context (links, deps, code, docs, owners) ---
-          echo "=== 2. Relationship Context ==="
-          twg context jira workitem "$TICKET" --detail full --output json 2>&1
-          echo ""
-
-          echo "========================================"
-          echo "  Context fetch complete — all TWG calls"
-          echo "  returned successfully."
-          echo "========================================"

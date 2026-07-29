@@ -40,31 +40,35 @@ jobs:
           prompt: |
             This is a read-only MCP capability inspection.
 
-            Before calling any tools:
+            Your task is to discover every MCP tool exposed by the configured MCP servers.
 
-            1. List every MCP tool currently available.
-            2. Print:
-               - Tool name
-               - Description
-               - Required parameters
-            3. Specifically indicate whether tools exist for:
-               - Listing Jira attachments
-               - Downloading attachments
-               - Reading attachment contents
-               - Reading Confluence pages
-               - Searching issues
-               - Creating issues
-               - Creating comments
-               - Updating issues
-               - Transitions
-               - JQL search
+            You may use read-only MCP inspection tools and read the .mcp.json configuration file if needed.
 
-            After listing the tools, stop.
+            Do NOT modify any files.
+            Do NOT create, edit, or delete Jira issues.
+            Do NOT create comments.
+            Do NOT make any changes to the repository.
 
-            Do NOT call any tool.
-            Do NOT read any Jira ticket.
-            Do NOT modify anything.
-            Only print the available MCP tool inventory.
+            Output a table containing:
+
+            - Tool name
+            - Description
+            - Required parameters
+            - Whether it is read-only or modifies data
+
+            Specifically identify whether tools exist for:
+
+            - Listing Jira attachments
+            - Downloading attachments
+            - Reading attachment contents
+            - Reading Confluence pages
+            - Searching issues (JQL)
+            - Creating issues
+            - Updating issues
+            - Creating comments
+            - Transitioning issues
+
+            After listing the available tools, stop.
 
           claude_args: >-
             --mcp-config .mcp.json

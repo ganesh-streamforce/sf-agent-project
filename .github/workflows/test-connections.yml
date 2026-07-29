@@ -1,49 +1,72 @@
-name: Test Connections
+name: Test MCP Tools
 
 on:
   workflow_dispatch:
 
 jobs:
-  test-salesforce:
+  list-mcp-tools:
     runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      id-token: write
+
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install Salesforce CLI
-        run: npm install -g @salesforce/cli
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
 
-      - name: Get access token (Client Credentials flow)
+      - name: Verify mcp-atlassian installation
         run: |
-          RESPONSE=$(curl -s -X POST "${{ secrets.SF_INSTANCE_URL }}/services/oauth2/token" \
-            -d "grant_type=client_credentials" \
-            -d "client_id=${{ secrets.SF_CLIENT_ID }}" \
-            -d "client_secret=${{ secrets.SF_CLIENT_SECRET }}")
+          uvx mcp-atlassian --help
 
-          ACCESS_TOKEN=$(echo "$RESPONSE" | jq -r .access_token)
-
-          if [ "$ACCESS_TOKEN" = "null" ] || [ -z "$ACCESS_TOKEN" ]; then
-            echo "Failed to get access token. Response was:"
-            echo "$RESPONSE"
-            exit 1
-          fi
-
-          echo "::add-mask::$ACCESS_TOKEN"
-          echo "SF_ACCESS_TOKEN=$ACCESS_TOKEN" >> "$GITHUB_ENV"
-
-      - name: Register org with sf CLI
-        run: |
-          sf org login access-token \
-            --instance-url "${{ secrets.SF_INSTANCE_URL }}" \
-            --alias target-org \
-            --no-prompt
+      - name: Run Claude Code - List MCP Tools
+        uses: anthropics/claude-code-action@v1
         env:
-          SF_ACCESS_TOKEN: ${{ env.SF_ACCESS_TOKEN }}
+          ANTHROPIC_BASE_URL: https://openrouter.ai/api
+          ANTHROPIC_AUTH_TOKEN: ${{ secrets.OPENROUTER_API_KEY }}
+          ANTHROPIC_API_KEY: ""
+          ANTHROPIC_MODEL: ${{ vars.OPENROUTER_MODEL }}
 
-      - name: Confirm connection
-        run: sf org display --target-org target-org
+          JIRA_BASE_URL: ${{ secrets.JIRA_BASE_URL }}
+          JIRA_USER_EMAIL: ${{ secrets.JIRA_USER_EMAIL }}
+          JIRA_API_TOKEN: ${{ secrets.JIRA_API_TOKEN }}
 
-      - name: Run a trivial query
-        run: |
-          sf data query \
-            --query "SELECT Id, Name FROM Organization LIMIT 1" \
-            --target-org target-org
+        with:
+          anthropic_api_key: ${{ secrets.OPENROUTER_API_KEY }}
+          show_full_output: true
+
+          prompt: |
+            This is a read-only MCP capability inspection.
+
+            Before calling any tools:
+
+            1. List every MCP tool currently available.
+            2. Print:
+               - Tool name
+               - Description
+               - Required parameters
+            3. Specifically indicate whether tools exist for:
+               - Listing Jira attachments
+               - Downloading attachments
+               - Reading attachment contents
+               - Reading Confluence pages
+               - Searching issues
+               - Creating issues
+               - Creating comments
+               - Updating issues
+               - Transitions
+               - JQL search
+
+            After listing the tools, stop.
+
+            Do NOT call any tool.
+            Do NOT read any Jira ticket.
+            Do NOT modify anything.
+            Only print the available MCP tool inventory.
+
+          claude_args: >-
+            --mcp-config .mcp.json
+            --allowedTools "mcp__jira__*"
+            --max-turns 3

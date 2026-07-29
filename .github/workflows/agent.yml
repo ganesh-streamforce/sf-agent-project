@@ -17,6 +17,15 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Record OpenRouter usage before
+        id: usage_before
+        run: |
+          USED=$(curl -s https://openrouter.ai/api/v1/auth/key \
+            -H "Authorization: Bearer ${{ secrets.OPENROUTER_API_KEY }}" \
+            | jq -r '.data.usage')
+
+          echo "USED_BEFORE=$USED" >> $GITHUB_ENV
+
       - name: Create branch
         run: git checkout -b agent/${{ github.event.inputs.ticket_key }}
 
@@ -124,3 +133,15 @@ jobs:
             --mcp-config .mcp.json
             --allowedTools "Bash,Edit,Read,Write,mcp__jira__*"
             --max-turns 75
+      - name: Record OpenRouter usage after
+        run: |
+          USED_AFTER=$(curl -s https://openrouter.ai/api/v1/auth/key \
+            -H "Authorization: Bearer ${{ secrets.OPENROUTER_API_KEY }}" \
+            | jq -r '.data.usage')
+
+          echo "Used before: $USED_BEFORE"
+          echo "Used after : $USED_AFTER"
+
+          DIFF=$(awk "BEGIN {print $USED_AFTER - $USED_BEFORE}")
+
+          echo "Credits used this run: $DIFF"

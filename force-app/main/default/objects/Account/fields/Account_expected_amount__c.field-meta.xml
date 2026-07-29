@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Account_expected_amount__c</fullName>
+    <description>Expected annual revenue amount projected for this account. Used by sales and finance teams to track account-level revenue targets, support forecasting accuracy, and measure performance against quarterly and annual goals. This field should be updated at the start of each fiscal year with the account's revenue target.</description>
+    <externalId>false</externalId>
+    <label>Account_expected_amount</label>
+    <precision>18</precision>
+    <required>false</required>
+    <scale>0</scale>
+    <trackFeedHistory>false</trackFeedHistory>
+    <type>Number</type>
+    <unique>false</unique>
+</CustomField>

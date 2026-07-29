@@ -95,3 +95,4 @@ CLAUDE.md           → Agent instructions (always loaded into context at start)
 > Add one line per successful ticket. Format: `YYYY-MM-DD (PROJ-###): Brief description of what was done`
 
 - *(2026-07-22): Updated context files per Anthropic context engineering best practices)*
+- 2026-07-29 (DTM-1644): Updated description on Account.Account_expected_amount__c field — clarified revenue forecasting context, usage guidance, and update cadence

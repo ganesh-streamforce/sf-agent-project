@@ -1,24 +1,23 @@
-Here is the revised technical design for DTM-1670, incorporating the human feedback to change the field label to "company address".
-
 # Design Plan: DTM-1670
 
 ## 1. Objective
-Create a new custom field on the Salesforce Account object with the label "company address" to store address-related information. This is a foundational task with no explicit business logic or automation required beyond the field’s creation.
+Create a new custom field on the Salesforce **Account** object with the label "company address" to store address-related information. This is a foundational task with no explicit business logic or automation required beyond the field's creation.
 
 ## 2. Requirements
 Based on the ticket, implied acceptance criteria, and human feedback:
-- A custom field must exist on the Account object.
-- The field’s Label must be "company address" (lowercase ‘c’, ‘a’, space included).
+- A custom field must exist on the **Account** object (as explicitly stated in the original ticket).
+- The field's Label must be "company address" (lowercase 'c', 'a', space included).
 - The field must be accessible in the UI (via page layouts, list views, reports).
 - The implementation must not negatively impact existing Account data or functionality.
 
 ## 3. Existing Context
-- The Account object is a standard Salesforce object with no existing field matching the name or purpose described.
+- The **Account object** is a standard Salesforce object with no existing field matching the name or purpose described.
 - No previous work, dependencies, or related tickets exist.
 - The ticket is assigned to Siva Kumar, who is both the reporter and assignee.
+- **Clarification:** The original ticket (DTM-1670) explicitly states the target object is "Account." This design is based on that requirement. If there is any confusion or if the requirement has changed (e.g., to a different object), please confirm.
 
 ## 4. Proposed Solution
-Create a new custom field on the Account object. Due to missing requirements (data type, properties), the design will default to the safest, most flexible option:
+Create a new custom field on the **Account object**. Due to missing requirements (data type, properties), the design will default to the safest, most flexible option:
 - **Data Type:** Text (255 characters). This allows arbitrary address input and is a standard field length.
 - **Label:** "company address" (exact casing and spacing as per feedback).
 - **API Name:** `Company_Address__c` (system-generated based on label; API names cannot contain spaces).
@@ -50,7 +49,7 @@ Create a new custom field on the Account object. Due to missing requirements (da
 - **No new objects, tabs, validation rules, or automation components.**
 
 ## 7. Data Model Changes
-- **Addition:** A single Text field on the Account object.
+- **Addition:** A single Text field on the **Account object**.
 - **No deletion or modification of existing fields.**
 
 ## 8. Integration Changes
@@ -58,7 +57,7 @@ Create a new custom field on the Account object. Due to missing requirements (da
 
 ## 9. Security and Permissions
 - **Field-Level Security:** Set to "Visible" and "Read/Write" for the System Administrator profile. For all standard profiles, set to "Visible" and "Read/Write" (unless specific user restrictions are later defined). For integration users (if any), no changes are needed unless further clarification is provided.
-- **Record-Level Security:** No change; field inherits existing sharing rules for the Account object.
+- **Record-Level Security:** No change; field inherits existing sharing rules for the **Account object**.
 
 ## 10. Testing Strategy
 - **Data Integrity:** Verify no existing Account records break when the field is added (no data loss).
@@ -76,6 +75,7 @@ Create a new custom field on the Account object. Due to missing requirements (da
 - The field is not required.
 - The field should be added to the default Account Layout (no specific record type is mentioned).
 - FLS should initially grant read/write access to all users who can see Accounts, unless further clarified.
+- **The target object is Account, as explicitly stated in the original ticket.** If this has changed, please confirm.
 
 ## 13. Open Questions
 1. **What is the intended data type?** (Text, Picklist, Lookup, etc.) – This is critical and must be confirmed before implementation.
@@ -84,9 +84,10 @@ Create a new custom field on the Account object. Due to missing requirements (da
 4. **Should this field be required or have any validation rules?**
 5. **What is the intended Field-Level Security for non-admin profiles?** (e.g., is it read-only for some users?)
 6. **Was "company address" meant to replace "company Location" entirely, or are both fields needed?** (This assumes replacement per the feedback.)
+7. **Is the target object still Account, or has the requirement changed?** (The original ticket explicitly states Account. Please confirm if this is still correct.)
 
 ## 14. Implementation Sequence
-1. **Confirm Data Type:** Resolve the open question about field type with the requester (Siva Kumar).
+1. **Confirm Data Type and Object:** Resolve the open questions about field type and target object with the requester (Siva Kumar).
 2. **Create Field:** In a sandbox, create the custom field on Account with the label "company address" and API Name `Company_Address__c`.
 3. **Add to Layout:** Edit the standard Account Layout to include the new field.
 4. **Set FLS:** Configure field-level security for all profiles as per assumptions.
@@ -97,11 +98,12 @@ Create a new custom field on the Account object. Due to missing requirements (da
 - **Low Risk:** Adding a custom field is a standard, non-destructive action. The primary risk is incorrectly interpreting missing data type (e.g., making it a picklist when a free-text field was needed).
 - **Minor Risk:** If the field is later changed to a different data type, existing data may be lost or require migration.
 - **Minor Risk:** If "company address" was intended as an additional field (not a replacement), the requirement is incomplete.
+- **Minor Risk:** If the target object is not Account (despite the ticket stating so), rework will be required.
 
 ## 16. Developer/Admin Handoff
 The following implementation work is required:
 - **Create Custom Field:** Using the Metadata API (or Setup UI), create a custom field with the following attributes:
-  - Object: Account
+  - Object: **Account** (as stated in the original ticket)
   - Label: "company address"
   - Type: Text (255)
   - Required: False
@@ -116,4 +118,11 @@ The following implementation work is required:
 
 ## Final Recommendation
 **Recommended Approach:**
-Implement the field as a **Text (255) field** with the label "company address" and API Name `Company_Address__c`. This is the most flexible, non-destructive default. Place it on the standard Account Layout with read/write access for all profiles. Deploy from a sandbox to production after testing. **However**, the data type and FLS must be confirmed with the requester before proceeding, as these are critical unknowns that could cause rework. Additionally, confirm whether the original "company Location" requirement is superseded by this new request or if both fields are needed.
+Implement the field as a **Text (255) field** on the **Account object** with the label "company address" and API Name `Company_Address__c`. This is the most flexible, non-destructive default. Place it on the standard Account Layout with read/write access for all profiles. Deploy from a sandbox to production after testing.
+
+**Important Clarification:** The original ticket (DTM-1670) explicitly states the target object is **Account**. This design is based on that requirement. If the reviewer is questioning this, please confirm:
+1. Is the target object still **Account** as stated in the ticket?
+2. Has the requirement changed to a different object?
+3. Is there confusion about the object name?
+
+Once confirmed, implementation can proceed as described. The data type and FLS must also be confirmed with the requester before proceeding, as these are critical unknowns that could cause rework. Additionally, confirm whether the original "company Location" requirement is superseded by this new request or if both fields are needed.

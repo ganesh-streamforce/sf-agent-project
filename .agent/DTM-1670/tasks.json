@@ -1,13 +1,12 @@
 {
   "ticket": "DTM-1670",
   "tasks": [
-    "1. **Confirm Data Type and Field Properties:** Contact Siva Kumar to confirm the data type (e.g., Text, Picklist, Lookup) and all field properties (required, unique, external ID, case-sensitive) for the 'company address' field on the Account object. Document the confirmed decisions.",
-    "2. **Create the Custom Field (Admin):** Using the Salesforce Setup UI or Metadata API, create a new custom field on the Account object with the following attributes: Label: 'company address', API Name: 'Company_Address__c', Type: Text (255 characters), Required: False, Unique: False, External ID: False, Case Sensitive: False.",
-    "3. **Add the Field to the Account Page Layout (Admin):** Edit the standard 'Account Layout' (and any other active record type layouts) to place the new 'Company_Address__c' field in a logical section (e.g., 'Custom Field' or 'Additional Information').",
-    "4. **Configure Field-Level Security (FLS) (Admin):** Set the 'Company_Address__c' field to 'Visible' and 'Read-Only' for all standard profiles. Grant 'Visible' and 'Read/Write' access to the System Administrator profile. (Note: Adjust based on confirmed FLS from Task 1.)",
-    "5. **Verify Field Creation and Configuration (Tester):** Log in as a System Administrator and as a standard user to an Account record. Confirm the 'company address' field is visible, editable (per FLS settings), and correctly placed on the layout.",
-    "6. **Verify Data Integrity (Tester):** In a sandbox, confirm that adding the new field does not break any existing Account records or related automations (e.g., workflows, flows, processes).",
-    "7. **Deploy the Changes to Production (Admin/DevOps):** Deploy the custom field metadata and page layout modifications from the sandbox to the production environment using a Change Set, Salesforce DX, or a CI/CD pipeline.",
-    "8. **Perform Post-Deployment Validation (Tester):** In production, log in as both a System Administrator and a standard user. Verify the field is visible, accessible, and follows the configured FLS on an Account record."
+    "Admin: Create a custom field on the Account object with Label 'company address', API Name `Company_Address__c`, Data Type Text (255 characters), Required = false, Unique = false, External ID = false, Case Sensitive = false, and no Help Text. Use a sandbox environment.",
+    "Admin: Add the new `Company_Address__c` field to the standard Account page layout in a logical section (e.g., 'Custom Information' or 'Additional Information'). Ensure the field is placed and saved.",
+    "Admin: Configure Field-Level Security (FLS) for the `Company_Address__c` field. Set it to Visible and Read/Write for the System Administrator profile and all standard profiles that have access to the Account object.",
+    "Admin: Deploy the custom field and page layout changes from the sandbox to the production environment using a Change Set, Metadata API, or CI/CD pipeline.",
+    "Tester: Verify that the new field 'company address' is visible and editable on the Account record page for a standard user. Confirm the field label and API Name are correct.",
+    "Tester: Perform negative testing: attempt to create an Account without filling the field (should succeed), and attempt to enter more than 255 characters (should be truncated or rejected).",
+    "Tester: Confirm that existing Account data and related automations (workflows, flows) are not negatively impacted by the field addition (regression check)."
   ]
 }

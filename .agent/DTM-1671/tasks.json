@@ -1,10 +1,10 @@
 {
   "ticket": "DTM-1671",
   "tasks": [
-    "1. Confirm missing implementation details for the 'company Address' custom field by contacting the requester (Siva Kumar). Obtain the target object, field type, API name, field length, required/optional setting, page layout placement, record type restrictions, and field-level security requirements.",
-    "2. Create the custom field on the confirmed Salesforce object with the exact label 'company Address', the confirmed field type and length, and the confirmed API name. Set the field as optional unless otherwise specified.",
-    "3. Configure field-level security for the custom field according to the confirmed requirements (e.g., grant read/edit access to specific profiles/permission sets).",
-    "4. Add the custom field to the confirmed page layouts and record types as specified.",
-    "5. Test the custom field: verify the label is exactly 'company Address', the API name is correct, data can be entered and saved, the field appears on the intended page layouts, and field-level security restrictions work as expected for representative users."
+    "1. Confirm all open implementation details for the 'company Address' field on the Account object with the requester (Siva Kumar) or product owner. Specifically, obtain decisions on: field type, API name (e.g., Company_Address__c or company_Address__c), field length, required/optional status, page layout(s) to include the field, record type assignments, field-level security profiles/permission sets, help text, default value, and business purpose. Document the confirmed decisions.",
+    "2. In Salesforce Setup, navigate to Object Manager > Account > Fields & Relationships > New. Create a custom field on the Account object with the label exactly 'company Address' (lowercase 'c', capital 'A'). Use the confirmed field type, API name, length, required status, and help text from the previous task. If no confirmation is obtained, use the default assumptions: Text(255), optional, API name Company_Address__c, no help text.",
+    "3. Configure field-level security for the 'company Address' field: assign Read/Edit access to the profiles/permission sets as confirmed in task 1. If not specified, grant access to all profiles that have Account object access (default).",
+    "4. Add the 'company Address' field to the relevant Account page layouts and record types as confirmed in task 1. If not specified, add it to the standard 'Account Layout' and assign to all Account record types.",
+    "5. Perform manual testing: create a test Account record, verify the field is visible on the intended layout, enter data, save, and confirm the value persists. Test field-level security by logging in as a user with a representative profile. Confirm the field behaves as expected (e.g., required validation if applicable). Document test results."
   ]
 }

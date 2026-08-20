@@ -1,0 +1,10 @@
+{
+  "ticket": "DTM-1671",
+  "tasks": [
+    "1. Confirm missing implementation details for the 'company Address' custom field by contacting the requester (Siva Kumar). Obtain the target object, field type, API name, field length, required/optional setting, page layout placement, record type restrictions, and field-level security requirements.",
+    "2. Create the custom field on the confirmed Salesforce object with the exact label 'company Address', the confirmed field type and length, and the confirmed API name. Set the field as optional unless otherwise specified.",
+    "3. Configure field-level security for the custom field according to the confirmed requirements (e.g., grant read/edit access to specific profiles/permission sets).",
+    "4. Add the custom field to the confirmed page layouts and record types as specified.",
+    "5. Test the custom field: verify the label is exactly 'company Address', the API name is correct, data can be entered and saved, the field appears on the intended page layouts, and field-level security restrictions work as expected for representative users."
+  ]
+}

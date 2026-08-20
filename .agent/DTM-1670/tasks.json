@@ -1,0 +1,8 @@
+{
+  "ticket": "DTM-1670",
+  "tasks": [
+    "Task 1 [Admin]: Create the custom field `Company_Location__c` on the Account object using Salesforce Setup. Set the Label to \"company Location\", Data Type to Text, and Length to 200. Set the field as not required, not unique, not an external ID, and not case-sensitive.",
+    "Task 2 [Admin]: Modify the standard Account page layout. Add the custom field `Company_Location__c` to the layout in a logical section (e.g., Custom Information or Additional Information). Ensure no field duplicates are placed on the layout.",
+    "Task 3 [Admin]: Configure Field-Level Security (FLS) for the custom field `Company_Location__c`. Set the field to Visible and Read/Write for the System Administrator profile and all standard profiles that currently have access to the Account object."
+  ]
+}

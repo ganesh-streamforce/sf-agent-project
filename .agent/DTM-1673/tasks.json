@@ -1,0 +1,42 @@
+{
+  "ticket": "DTM-1673",
+  "tasks": [
+    {
+      "id": "task-001",
+      "description": "Create a custom field 'company_Address__c' on the Account object.  Label: 'company Address', Type: Text, Length: 255.  Not required, unique, or external ID.  No default value.",
+      "role": "admin",
+      "depends_on": [],
+      "status": "pending",
+      "retry_count": 0,
+      "error": "none",
+      "output_files": [],
+      "deployment_status": "deployed"
+    },
+    {
+      "id": "task-002",
+      "description": "Set Field-Level Security for 'company_Address__c'.  Make field visible and read-only for all standard profiles.",
+      "role": "admin",
+      "depends_on": [
+        "task-001"
+      ],
+      "status": "pending",
+      "retry_count": 0,
+      "error": "none",
+      "output_files": [],
+      "deployment_status": "deployed"
+    },
+    {
+      "id": "task-003",
+      "description": "Verify the field 'company_Address__c' exists in Setup > Object Manager > Account > Fields & Relationships.",
+      "role": "admin",
+      "depends_on": [
+        "task-002"
+      ],
+      "status": "pending",
+      "retry_count": 0,
+      "error": "none",
+      "output_files": [],
+      "deployment_status": "deployed"
+    }
+  ]
+}

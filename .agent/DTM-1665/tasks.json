@@ -1,0 +1,83 @@
+{
+  "ticket": "DTM-1665",
+  "tasks": [
+    {
+      "id": "task-001",
+      "description": "Create custom field 'Company Address' on Account object",
+      "role": "admin",
+      "depends_on": [],
+      "status": "pending",
+      "retry_count": 0,
+      "error": null,
+      "output_files": [],
+      "deployment_status": "not_deployed"
+    },
+    {
+      "id": "task-002",
+      "description": "Add 'Company Address' field to default Account page layout",
+      "role": "admin",
+      "depends_on": [
+        "task-001"
+      ],
+      "status": "pending",
+      "retry_count": 0,
+      "error": null,
+      "output_files": [],
+      "deployment_status": "not_deployed"
+    },
+    {
+      "id": "task-003",
+      "description": "Configure Field-Level Security for 'Company Address' field: grant Read/Edit access to System Administrator profile; leave other profiles with default visibility (visible and editable) unless business requires restriction",
+      "role": "admin",
+      "depends_on": [
+        "task-001"
+      ],
+      "status": "pending",
+      "retry_count": 0,
+      "error": null,
+      "output_files": [],
+      "deployment_status": "not_deployed"
+    },
+    {
+      "id": "task-004",
+      "description": "Deploy the custom field, page layout modification, and FLS settings to sandbox environment for testing",
+      "role": "admin",
+      "depends_on": [
+        "task-001",
+        "task-002",
+        "task-003"
+      ],
+      "status": "pending",
+      "retry_count": 0,
+      "error": null,
+      "output_files": [],
+      "deployment_status": "not_deployed"
+    },
+    {
+      "id": "task-005",
+      "description": "Test the 'Company Address' field in sandbox: verify field appears on Account record page, can be populated with up to 255 characters, is accessible via SOQL/REST/SOAP APIs, and FLS restrictions work as configured",
+      "role": "admin",
+      "depends_on": [
+        "task-004"
+      ],
+      "status": "pending",
+      "retry_count": 0,
+      "error": null,
+      "output_files": [],
+      "deployment_status": "not_deployed"
+    },
+    {
+      "id": "task-006",
+      "description": "Deploy the custom field, page layout modification, and FLS settings to production environment after successful sandbox testing",
+      "role": "admin",
+      "depends_on": [
+        "task-005"
+      ],
+      "status": "pending",
+      "retry_count": 0,
+      "error": null,
+      "output_files": [],
+      "deployment_status": "not_deployed"
+    }
+  ]
+}

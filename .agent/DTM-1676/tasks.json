@@ -1,0 +1,221 @@
+{
+  "ticket": "DTM-1676",
+  "tasks": [
+    {
+      "id": "task-001",
+      "description": "Clarify open questions with Siva Kumar: confirm target object (Account), production deployment requirement, page layout inclusion, duplicate status with DTM-1671, FLS read-only vs read-write, and whether profiles are source-managed.",
+      "role": "admin",
+      "depends_on": [],
+      "status": "pending",
+      "retry_count": 0,
+      "error": "",
+      "output_files": [],
+      "deployment_status": "not_deployed"
+    },
+    {
+      "id": "task-002",
+      "description": "In a sandbox, create the custom text field Company_Address__c on the Account object via Setup > Object Manager > Account > Fields & Relationships. Set label 'company Address', length 255, not required, not unique, not external ID, no default value.",
+      "role": "admin",
+      "depends_on": [
+        "task-001"
+      ],
+      "status": "pending",
+      "retry_count": 0,
+      "error": "",
+      "output_files": [],
+      "deployment_status": "not_deployed"
+    },
+    {
+      "id": "task-003",
+      "description": "Configure Field-Level Security for Company_Address__c: set field visible on all standard profiles and set to read-only (or read-write per clarification).",
+      "role": "admin",
+      "depends_on": [
+        "task-002"
+      ],
+      "status": "pending",
+      "retry_count": 0,
+      "error": "",
+      "output_files": [],
+      "deployment_status": "not_deployed"
+    },
+    {
+      "id": "task-004",
+      "description": "If confirmed, add Company_Address__c to the standard Account page layout in a logical section (e.g., 'Address Information').",
+      "role": "admin",
+      "depends_on": [
+        "task-001"
+      ],
+      "status": "pending",
+      "retry_count": 0,
+      "error": "",
+      "output_files": [],
+      "deployment_status": "not_deployed"
+    },
+    {
+      "id": "task-005",
+      "description": "If profiles are not source-managed, create a permission set named 'Account_Company_Address_Read' with read access to Company_Address__c and assign it to all users (or a relevant group).",
+      "role": "admin",
+      "depends_on": [
+        "task-001"
+      ],
+      "status": "pending",
+      "retry_count": 0,
+      "error": "",
+      "output_files": [],
+      "deployment_status": "not_deployed"
+    },
+    {
+      "id": "task-006",
+      "description": "Retrieve the metadata for Company_Address__c using SFDX: `sfdx force:source:retrieve -m CustomField:Account.Company_Address__c` and save the resulting file.",
+      "role": "developer",
+      "depends_on": [
+        "task-002"
+      ],
+      "status": "pending",
+      "retry_count": 0,
+      "error": "",
+      "output_files": [],
+      "deployment_status": "not_deployed"
+    },
+    {
+      "id": "task-007",
+      "description": "If a permission set was created, retrieve its metadata using SFDX: `sfdx force:source:retrieve -m PermissionSet:Account_Company_Address_Read`. If profiles are source-managed, retrieve the relevant profile metadata with field permissions.",
+      "role": "developer",
+      "depends_on": [
+        "task-005"
+      ],
+      "status": "pending",
+      "retry_count": 0,
+      "error": "",
+      "output_files": [],
+      "deployment_status": "not_deployed"
+    },
+    {
+      "id": "task-008",
+      "description": "Commit the retrieved metadata to source control under `force-app/main/default/objects/Account/fields/Company_Address__c.field-meta.xml` (and permission set or profile files as needed). Create a feature branch named `feature/DTM-1676` and open a pull request referencing DTM-1673.",
+      "role": "developer",
+      "depends_on": [
+        "task-006",
+        "task-007"
+      ],
+      "status": "pending",
+      "retry_count": 0,
+      "error": "",
+      "output_files": [],
+      "deployment_status": "not_deployed"
+    },
+    {
+      "id": "task-009",
+      "description": "Build a deployment package using either a Change Set (outbound) or SFDX source deploy/convert. Include the field metadata, permission set (if applicable), and any profile metadata. Ensure FLS is included.",
+      "role": "developer",
+      "depends_on": [
+        "task-008"
+      ],
+      "status": "pending",
+      "retry_count": 0,
+      "error": "",
+      "output_files": [],
+      "deployment_status": "not_deployed"
+    },
+    {
+      "id": "task-010",
+      "description": "Deploy the package to the sandbox environment first. Verify deployment success.",
+      "role": "developer",
+      "depends_on": [
+        "task-009"
+      ],
+      "status": "pending",
+      "retry_count": 0,
+      "error": "",
+      "output_files": [],
+      "deployment_status": "not_deployed"
+    },
+    {
+      "id": "task-011",
+      "description": "Deploy the package to the UAT environment. Verify deployment success.",
+      "role": "developer",
+      "depends_on": [
+        "task-010"
+      ],
+      "status": "pending",
+      "retry_count": 0,
+      "error": "",
+      "output_files": [],
+      "deployment_status": "not_deployed"
+    },
+    {
+      "id": "task-012",
+      "description": "Deploy the package to the production environment. Verify deployment success.",
+      "role": "developer",
+      "depends_on": [
+        "task-011"
+      ],
+      "status": "pending",
+      "retry_count": 0,
+      "error": "",
+      "output_files": [],
+      "deployment_status": "not_deployed"
+    },
+    {
+      "id": "task-013",
+      "description": "Post-deployment validation: Run SOQL query `SELECT Id, Company_Address__c FROM Account LIMIT 1` in each target environment to confirm the field is queryable and returns no errors.",
+      "role": "developer",
+      "depends_on": [
+        "task-010",
+        "task-011",
+        "task-012"
+      ],
+      "status": "pending",
+      "retry_count": 0,
+      "error": "",
+      "output_files": [],
+      "deployment_status": "not_deployed"
+    },
+    {
+      "id": "task-014",
+      "description": "Check for naming collisions: Query FieldDefinition for Account to ensure no managed package or other custom field uses the API name Company_Address__c. Notify integration teams if any external system consumes Account data.",
+      "role": "developer",
+      "depends_on": [
+        "task-010",
+        "task-011",
+        "task-012"
+      ],
+      "status": "pending",
+      "retry_count": 0,
+      "error": "",
+      "output_files": [],
+      "deployment_status": "not_deployed"
+    },
+    {
+      "id": "task-015",
+      "description": "Run all existing Apex test classes that reference Account (e.g., AccountTriggerTest, AccountServiceTest) to confirm no regressions. Also run any Flows or validation rules involving Account.",
+      "role": "developer",
+      "depends_on": [
+        "task-010",
+        "task-011",
+        "task-012"
+      ],
+      "status": "pending",
+      "retry_count": 0,
+      "error": "",
+      "output_files": [],
+      "deployment_status": "not_deployed"
+    },
+    {
+      "id": "task-016",
+      "description": "Update Jira ticket DTM-1676 with deployment status per environment (sandbox, UAT, production), link to the pull request, and mark the ticket as done.",
+      "role": "developer",
+      "depends_on": [
+        "task-012",
+        "task-013",
+        "task-014",
+        "task-015"
+      ],
+      "status": "pending",
+      "retry_count": 0,
+      "error": "",
+      "output_files": [],
+      "deployment_status": "not_deployed"
+    }
+  ]
+}

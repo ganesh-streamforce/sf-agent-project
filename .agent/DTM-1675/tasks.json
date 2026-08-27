@@ -1,0 +1,68 @@
+{
+  "ticket": "DTM-1675",
+  "tasks": [
+    {
+      "id": "task-001",
+      "description": "Verify that the `Customer_Type__c` field exists on the Account object. If the field is a picklist, confirm that the value `'Standard'` is an active picklist value. If the value is missing, add it as an active picklist value.",
+      "role": "admin",
+      "depends_on": [],
+      "status": "pending",
+      "retry_count": 0,
+      "error": null,
+      "output_files": [],
+      "deployment_status": "not_deployed"
+    },
+    {
+      "id": "task-002",
+      "description": "Create the Apex class `CustomerTypeUpdater` with the following specification:\n- Access modifier: `public`\n- Method: `public static void updateCustomerType(Account acc)`\n- Behavior: Set `acc.Customer_Type__c = 'Standard'` and perform `update acc;`\n- Error handling: Wrap DML in a try-catch block for `DmlException` and rethrow the exception.\n- No other logic or dependencies.",
+      "role": "developer",
+      "depends_on": [
+        "task-001"
+      ],
+      "status": "pending",
+      "retry_count": 0,
+      "error": null,
+      "output_files": [],
+      "deployment_status": "not_deployed"
+    },
+    {
+      "id": "task-003",
+      "description": "Create the Apex test class `CustomerTypeUpdaterTest` with the following specification:\n- Access modifier: `@isTest`\n- Test method: Create an Account record with `Customer_Type__c` set to a different value (e.g., `'Premium'`). Call `CustomerTypeUpdater.updateCustomerType(acc)`. Re-query the Account and assert that `Customer_Type__c` equals `'Standard'`.\n- Ensure the test achieves at least 75% code coverage of the `CustomerTypeUpdater` class.",
+      "role": "developer",
+      "depends_on": [
+        "task-002"
+      ],
+      "status": "pending",
+      "retry_count": 0,
+      "error": null,
+      "output_files": [],
+      "deployment_status": "not_deployed"
+    },
+    {
+      "id": "task-004",
+      "description": "Deploy the new Apex class `CustomerTypeUpdater` and test class `CustomerTypeUpdaterTest` to a sandbox environment for validation. Ensure all tests pass and code coverage meets Salesforce requirements.",
+      "role": "developer",
+      "depends_on": [
+        "task-003"
+      ],
+      "status": "pending",
+      "retry_count": 0,
+      "error": null,
+      "output_files": [],
+      "deployment_status": "not_deployed"
+    },
+    {
+      "id": "task-005",
+      "description": "Execute the test class `CustomerTypeUpdaterTest` in the sandbox. Verify that all tests pass and code coverage is at least 75%. Perform manual testing by calling `CustomerTypeUpdater.updateCustomerType()` with various Account records (e.g., existing records, records with different `Customer_Type__c` values, null Account) to confirm the method behaves as expected and handles errors appropriately.",
+      "role": "developer",
+      "depends_on": [
+        "task-004"
+      ],
+      "status": "pending",
+      "retry_count": 0,
+      "error": null,
+      "output_files": [],
+      "deployment_status": "not_deployed"
+    }
+  ]
+}

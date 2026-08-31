@@ -1,0 +1,37 @@
+{
+  "ticket": "DTM-1644",
+  "tasks": [
+    {
+      "id": "task-001",
+      "description": "Update the Description attribute of the custom field Account_expected_amount on the Account object via Salesforce Setup UI.\n\n- Navigate to Setup \u2192 Object Manager \u2192 Account \u2192 Fields & Relationships \u2192 Account_expected_amount \u2192 Edit.\n- In the 'Description' field, enter the exact approved text: \"Expected revenue amount for the account. This field is used for forecasting and reporting.\"\n- Save the changes.\n- Do not modify any other field properties (label, type, length, requiredness, etc.).",
+      "role": "admin",
+      "depends_on": [],
+      "status": "pending",
+      "retry_count": 0,
+      "error": null,
+      "output_files": [],
+      "deployment_status": "not_deployed",
+      "deployment_id": null,
+      "deployment_components": [],
+      "rollback_path": "If needed, revert the description to its previous value (e.g., empty string) by editing the field again.",
+      "commit_sha": null
+    },
+    {
+      "id": "task-002",
+      "description": "Verify that the field description update was applied correctly.\n\n- Go to Setup \u2192 Object Manager \u2192 Account \u2192 Fields & Relationships \u2192 Account_expected_amount.\n- Confirm that the Description field displays the exact text: \"Expected revenue amount for the account. This field is used for forecasting and reporting.\"\n- Optionally, retrieve the field metadata (e.g., via SFDX force:source:retrieve -m CustomField:Account.Account_expected_amount) and inspect the <description> tag to confirm the change.\n- No functional testing is required as this is a UI-only metadata change.\n- If the description is correct, mark the task as complete. If not, report the discrepancy.",
+      "role": "admin",
+      "depends_on": [
+        "task-001"
+      ],
+      "status": "pending",
+      "retry_count": 0,
+      "error": null,
+      "output_files": [],
+      "deployment_status": "not_deployed",
+      "deployment_id": null,
+      "deployment_components": [],
+      "rollback_path": "If the description is incorrect, re-run TASK-001 with the correct text.",
+      "commit_sha": null
+    }
+  ]
+}
